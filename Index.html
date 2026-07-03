@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Learning Architecture of Technical Learning</title>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --paper:#F8FAFC;
+    --ink:#0F172A;
+    --muted:#475569;
+    --line:#E2E8F0;
+    --cyber:#13339C;
+    --learning:#047857;
+    --simulation:#2D81C7;
+    --human:#463E87;
+    --rust:#C2410C;
+    --gold:#A8650A;
+    --soft-blue:rgba(19,51,156,.08);
+    --soft-green:rgba(4,120,87,.09);
+    --soft-violet:rgba(70,62,135,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%;overflow:hidden}
+  body{
+    background:
+      radial-gradient(900px 620px at 72% 45%, rgba(45,129,199,.12), transparent 64%),
+      radial-gradient(740px 520px at 24% 74%, rgba(4,120,87,.10), transparent 62%),
+      linear-gradient(180deg,#FFFFFF 0%,#F8FAFC 100%);
+    color:var(--ink);
+    font-family:"IBM Plex Sans","Avenir Next","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #wrap{position:relative;width:100vw;height:100vh}
+  svg{position:absolute;inset:0;width:100%;height:100%}
+  a{color:var(--cyber);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .titleblock{
+    position:absolute;top:34px;left:40px;max-width:380px;z-index:3;
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;
+  }
+  .titleblock h1{
+    font-family:"Fraunces",Georgia,"Times New Roman",serif;
+    font-weight:500;font-size:clamp(30px,4vw,46px);line-height:1.05;
+    margin-top:10px;letter-spacing:0;color:var(--ink);
+  }
+  .titleblock h1 i{font-style:italic;color:var(--cyber)}
+  .titleblock p{font-size:14px;line-height:1.58;color:var(--muted);margin-top:14px}
+
+  .controls{position:absolute;top:38px;right:40px;z-index:4;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .controls button{
+    background:#FFFFFF;border:1px solid var(--line);color:var(--ink);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    padding:8px 13px;border-radius:8px;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.06);
+    transition:background .2s,border-color .2s,color .2s,transform .2s;
+  }
+  .controls button:hover{border-color:var(--cyber);color:var(--cyber);transform:translateY(-1px)}
+
+  .legend{
+    position:absolute;left:40px;bottom:34px;z-index:3;
+    font-size:12px;line-height:1.9;color:var(--muted);max-width:410px;
+  }
+  .legend .li{display:flex;align-items:center;gap:9px}
+  .legend .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .legend .dash{width:18px;height:0;border-top:1.5px dashed var(--muted);flex:0 0 auto}
+  .legend b{color:var(--ink);font-weight:650}
+
+  .readme{
+    position:absolute;right:40px;top:96px;z-index:3;text-align:right;
+    font-size:12px;color:var(--muted);line-height:1.65;max-width:340px;
+    pointer-events:none;
+  }
+  .readme b{color:var(--ink)}
+
+  #card{
+    position:absolute;z-index:5;pointer-events:none;opacity:0;transition:opacity .18s;
+    background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:8px;
+    padding:13px 15px;max-width:300px;box-shadow:0 18px 42px rgba(15,23,42,.14);
+  }
+  #card .cn{font-family:"Fraunces",Georgia,serif;font-size:18px;color:var(--ink);font-weight:500}
+  #card .cr{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-top:4px}
+  #card .cd{font-size:12px;line-height:1.55;color:var(--muted);margin-top:9px}
+  #card .cw{font-size:12px;line-height:1.5;margin-top:9px;color:var(--ink)}
+  #card .cw b{color:var(--cyber)}
+
+  text{font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif}
+  .ringlabel{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:9.5px;letter-spacing:.2em;fill:var(--muted);text-transform:uppercase;font-weight:600;
+  }
+  .nodelabel{font-size:12px;fill:var(--ink);letter-spacing:0;font-weight:650}
+  .nodesub{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:8.5px;fill:var(--muted);letter-spacing:.13em;text-transform:uppercase;font-weight:600;
+  }
+  .lvl{font-size:8px;fill:var(--ink);font-weight:700}
+  .levelsymbol{font-size:14px;font-weight:700;dominant-baseline:middle}
+  .corelabel{font-family:"Fraunces",Georgia,serif;font-size:18px;fill:var(--cyber);font-weight:500}
+  .coresub{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:8.5px;letter-spacing:.22em;fill:var(--muted);text-transform:uppercase;font-weight:600;
+  }
+  .source{
+    position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
+    z-index:3;font-size:10.5px;color:var(--muted);white-space:nowrap;
+  }
+
+  @media(max-width:900px){
+    html,body{overflow:auto}
+    #wrap{min-height:980px;height:980px}
+    .titleblock{left:22px;right:22px;top:24px;max-width:unset}
+    .controls{top:205px;left:22px;right:22px;justify-content:flex-start}
+    .legend{left:22px;right:22px;bottom:88px;max-width:unset}
+    .readme{left:22px;right:22px;bottom:24px;text-align:left;max-width:unset}
+    .source{display:none}
+  }
+  @media (prefers-reduced-motion: reduce){ .motion-note{display:none} }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <svg id="sky" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Animated mental model showing five technical service lines, three knowledge levels, and NIST-informed governance rings"></svg>
+
+  <div class="titleblock">
+    <div class="eyebrow">Learning architecture model</div>
+    <h1>The architecture is a <i>living</i> system.</h1>
+    <p>Five service lines orbit a governed center. Three knowledge levels show how capability grows. Decisions move outward, evidence returns inward, and the model improves because the field keeps teaching it what is true.</p>
+  </div>
+
+  <div class="controls">
+    <button id="btnMotion">Pause motion</button>
+    <button id="btnWave">Send a decision</button>
+  </div>
+
+  <div class="legend">
+    <div class="li"><span class="dot" style="background:var(--cyber)"></span><span><b>Outward pulse</b> means governance, standard, or decision.</span></div>
+    <div class="li"><span class="dot" style="background:var(--learning)"></span><span><b>Inward pulse</b> means evidence from real practice.</span></div>
+    <div class="li"><span class="dash"></span><span><b>Rings</b> follow NIST logic: Identify, Protect, Detect, Respond, Recover.</span></div>
+    <div class="li"><span class="dot" style="background:#FFFFFF;box-shadow:0 0 0 1px var(--line),0 0 12px var(--cyber)"></span><span><b>The moving point</b> is the architect crossing every layer.</span></div>
+  </div>
+
+  <div class="readme">
+    <b>How to read it.</b> Hover a service line to see what it contributes. The center is Govern: the place where standards, roles, validation, and iteration stay coherent.
+  </div>
+
+  <div class="source">NIST-informed structure: Govern, Identify, Protect, Detect, Respond, Recover. <a href="https://www.nist.gov/cyberframework" target="_blank" rel="noreferrer">NIST Cybersecurity Framework</a></div>
+
+  <div id="card"></div>
+</div>
+
+<script>
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.getElementById('sky');
+  const CX=870, CY=425;
+  const R_GOVERN=62, RINGS=[116,178,240,302,350], R_ORBIT=350;
+  const ringNames=['Identify','Protect','Detect','Respond','Recover'];
+
+  const lanes=[
+    {name:'Service Operations', sub:'Workflow and accountability', hue:'#A8650A', angle:-90,
+     desc:'Turns requests, projects, ownership, and service promises into a visible operating flow.',
+     weight:'This line keeps learning connected to how work is assigned, tracked, escalated, and completed.'},
+    {name:'Endpoint Management', sub:'Devices and automation', hue:'#2D81C7', angle:-18,
+     desc:'Frames the skills needed to monitor, manage, patch, automate, and troubleshoot endpoint environments.',
+     weight:'This line translates technical control into repeatable technician action.'},
+    {name:'Backup and Recovery', sub:'Continuity and resilience', hue:'#047857', angle:54,
+     desc:'Builds the logic of protection, recovery objectives, restoration decisions, and business continuity.',
+     weight:'This line teaches readiness for the moment when a system must return to operation.'},
+    {name:'Security Operations', sub:'Detect, respond, comply', hue:'#13339C', angle:126,
+     desc:'Connects detection, response, compliance, and operational judgment under pressure.',
+     weight:'This line makes security usable by the people who must act before, during, and after an incident.'},
+    {name:'Knowledge Systems', sub:'Documentation and transfer', hue:'#463E87', angle:198,
+     desc:'Captures the procedures, context, assets, decisions, and evidence that make environments transferable.',
+     weight:'This line prevents expertise from staying trapped in one person, one team, or one moment.'}
+  ];
+  const LEVELS=[
+    {label:'Basic', symbol:'✳', note:'Understands the workflow and follows the defined path.'},
+    {label:'Administrator', symbol:'◆', note:'Reads a real case, chooses the right action, and validates the result.'},
+    {label:'Advanced', symbol:'●', note:'Improves standards across cases and governs the practice.'}
+  ];
+
+  function el(tag,attrs,parent){
+    const e=document.createElementNS(NS,tag);
+    for(const k in attrs)e.setAttribute(k,attrs[k]);
+    (parent||svg).appendChild(e);return e;
+  }
+  const rad=a=>a*Math.PI/180;
+  const pt=(ang,r)=>({x:CX+Math.cos(rad(ang))*r, y:CY+Math.sin(rad(ang))*r});
+
+  const defs=el('defs',{});
+  defs.innerHTML=`
+    <radialGradient id="governG"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="52%" stop-color="#EAF2FF" stop-opacity=".95"/><stop offset="100%" stop-color="#13339C" stop-opacity=".14"/></radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0F172A" flood-opacity=".12"/></filter>`;
+
+  const field=el('g',{opacity:.85});
+  for(let i=0;i<100;i++){
+    const x=Math.random()*1440, y=Math.random()*900;
+    el('circle',{cx:x,cy:y,r:Math.random()*1.4+.35,fill:i%3===0?'#13339C':(i%3===1?'#047857':'#463E87'),opacity:(Math.random()*.18+.05).toFixed(2)},field);
+  }
+
+  const world=el('g',{id:'world'});
+  RINGS.forEach((r,i)=>{
+    el('circle',{cx:CX,cy:CY,r:r,fill:'none',stroke:i===RINGS.length-1?'rgba(71,85,105,.32)':'rgba(71,85,105,.20)','stroke-width':1,'stroke-dasharray':i===RINGS.length-1?'2 8':'none'},world);
+  });
+  el('circle',{cx:CX,cy:CY,r:R_GOVERN,fill:'none',stroke:'rgba(19,51,156,.34)','stroke-width':1.4},world);
+
+  const labelG=el('g',{'pointer-events':'none'});
+  function drawRingLabels(){
+    ringNames.forEach((n,i)=>{
+      const p=pt(-90,RINGS[i]);
+      el('text',{x:p.x+10,y:p.y+18,class:'ringlabel'},labelG).textContent=n;
+    });
+  }
+  drawRingLabels();
+  el('text',{x:CX,y:CY-5,class:'corelabel','text-anchor':'middle'},labelG).textContent='Govern';
+  el('text',{x:CX,y:CY+17,class:'coresub','text-anchor':'middle'},labelG).textContent='Center of coherence';
+
+  const core=el('circle',{cx:CX,cy:CY,r:R_GOVERN-17,fill:'url(#governG)',filter:'url(#shadow)'},world);
+
+  const pillarG=el('g',{},world);
+  const hover=[];
+  lanes.forEach((L,idx)=>{
+    const g=el('g',{class:'pillar','data-i':idx,style:'cursor:pointer'},pillarG);
+    const a=L.angle;
+    const p0=pt(a,R_GOVERN), p1=pt(a,R_ORBIT);
+    el('line',{x1:p0.x,y1:p0.y,x2:p1.x,y2:p1.y,stroke:'#FFFFFF','stroke-width':34,opacity:0,'pointer-events':'stroke'},g);
+    el('line',{x1:p0.x,y1:p0.y,x2:p1.x,y2:p1.y,stroke:L.hue,'stroke-width':1.8,opacity:.62},g);
+    LEVELS.forEach((level,li)=>{
+      const p=pt(a,RINGS[li]);
+      el('circle',{cx:p.x,cy:p.y,r:12,fill:'#FFFFFF',stroke:L.hue,'stroke-width':1.8,filter:'url(#shadow)'},g);
+    });
+    const ph=pt(a,R_ORBIT);
+    el('circle',{cx:ph.x,cy:ph.y,r:17,fill:'#FFFFFF',stroke:L.hue,'stroke-width':2.6,filter:'url(#shadow)'},g);
+    el('circle',{cx:ph.x-5,cy:ph.y,r:3.4,fill:L.hue},g);
+    el('circle',{cx:ph.x+5,cy:ph.y,r:3.4,fill:L.hue,opacity:.5},g);
+    hover.push({g,L,ph,a});
+  });
+
+  const nameG=el('g',{'pointer-events':'none'});
+  function drawNames(rot){
+    nameG.innerHTML='';
+    hover.forEach(({L})=>{
+      const a=L.angle+rot;
+      const p=pt(a,R_ORBIT+32);
+      const anchor=Math.cos(rad(a))>.35?'start':(Math.cos(rad(a))<-.35?'end':'middle');
+      const t1=el('text',{x:p.x,y:p.y,class:'nodelabel','text-anchor':anchor},nameG); t1.textContent=L.name;
+      const t2=el('text',{x:p.x,y:p.y+14,class:'nodesub','text-anchor':anchor},nameG); t2.textContent=L.sub;
+    });
+  }
+
+  const levelSymbolG=el('g',{'pointer-events':'none'});
+  function drawLevelSymbols(rot){
+    levelSymbolG.innerHTML='';
+    hover.forEach(({L})=>{
+      const a=L.angle+rot;
+      LEVELS.forEach((level,li)=>{
+        const p=pt(a,RINGS[li]);
+        const t=el('text',{x:p.x,y:p.y+1,class:'levelsymbol','text-anchor':'middle',fill:L.hue},levelSymbolG);
+        t.textContent=level.symbol;
+      });
+    });
+  }
+
+  const partG=el('g',{},world);
+  const particles=[];
+  function spawn(laneIdx,dir){
+    const c=el('circle',{r:dir>0?2.6:2.1, fill:dir>0?'#13339C':'#047857', opacity:.82, filter:'url(#soft)'},partG);
+    particles.push({c,lane:laneIdx,dir,t:dir>0?0:1,sp:(.0015+Math.random()*.0015)});
+  }
+  lanes.forEach((_,i)=>{spawn(i,+1);spawn(i,-1);if(i%2===0)spawn(i,+1);});
+
+  const architectTrail=[];
+  for(let i=0;i<14;i++){
+    architectTrail.push(el('circle',{r:3.8-(i*.18),fill:i===0?'#C2410C':'#13339C',opacity:(.72-(i*.045)).toFixed(2)},svg));
+  }
+
+  const waves=[];
+  function sendWave(){
+    const w=el('circle',{cx:CX,cy:CY,r:R_GOVERN,fill:'none',stroke:'#13339C','stroke-width':1.7,opacity:.9},svg);
+    waves.push({w,r:R_GOVERN});
+  }
+  document.getElementById('btnWave').addEventListener('click',sendWave);
+
+  const card=document.getElementById('card');
+  hover.forEach(({g,L})=>{
+    g.addEventListener('mousemove',e=>{
+      card.style.opacity=1;
+      const x=Math.min(e.clientX+18, window.innerWidth-320);
+      const y=Math.min(e.clientY-10, window.innerHeight-210);
+      card.style.left=Math.max(12,x)+'px';
+      card.style.top=Math.max(12,y)+'px';
+      card.innerHTML=`<div class="cn">${L.name}</div><div class="cr" style="color:${L.hue}">${L.sub}</div>
+        <div class="cd">${L.desc}</div>
+        <div class="cw"><b>Knowledge growth:</b> Basic follows the path, Administrator decides in context, Advanced improves the standard. ${L.weight}</div>`;
+    });
+    g.addEventListener('mouseleave',()=>{card.style.opacity=0});
+  });
+
+  let motion=true, rot=0, t0=performance.now(), architectT=0;
+  document.getElementById('btnMotion').addEventListener('click',function(){
+    motion=!motion;
+    this.textContent=motion?'Pause motion':'Resume motion';
+  });
+
+  function frame(now){
+    const dt=now-t0; t0=now;
+    if(motion){rot+=dt*.00145;}
+    world.setAttribute('transform',`rotate(${rot} ${CX} ${CY})`);
+    drawNames(rot);
+    drawLevelSymbols(rot);
+
+    const breath=1+Math.sin(now*.0012)*.055;
+    core.setAttribute('r',(R_GOVERN-17)*breath);
+
+    particles.forEach(P=>{
+      if(motion){P.t+=P.sp*P.dir*(dt/16);}
+      if(P.t>1){P.t=0} if(P.t<0){P.t=1}
+      const r=R_GOVERN+(R_ORBIT-R_GOVERN)*P.t;
+      const p=pt(lanes[P.lane].angle,r);
+      P.c.setAttribute('cx',p.x); P.c.setAttribute('cy',p.y);
+    });
+
+    if(motion){architectT+=dt*.0002;}
+    architectTrail.forEach((c,i)=>{
+      const lag=i*.013;
+      const a=((architectT-lag)*360)%360;
+      const r=R_GOVERN+(R_ORBIT-R_GOVERN)*(.5+.5*Math.sin((architectT-lag)*2.35));
+      const p=pt(a+rot,r);
+      c.setAttribute('cx',p.x); c.setAttribute('cy',p.y);
+    });
+
+    for(let i=waves.length-1;i>=0;i--){
+      const W=waves[i];
+      W.r+=dt*.095;
+      W.w.setAttribute('r',W.r);
+      W.w.setAttribute('opacity',Math.max(0,.9*(1-(W.r-R_GOVERN)/(R_ORBIT-R_GOVERN+80))));
+      if(W.r>R_ORBIT+90){W.w.remove();waves.splice(i,1)}
+    }
+    requestAnimationFrame(frame);
+  }
+  drawNames(0);
+  drawLevelSymbols(0);
+  requestAnimationFrame(frame);
+
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    motion=false;
+    document.getElementById('btnMotion').textContent='Resume motion';
+  }
+})();
+</script>
+</body>
+</html>
