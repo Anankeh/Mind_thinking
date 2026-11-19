@@ -25,3 +25,8 @@ The three knowledge levels are represented with symbols instead of labels:
 - ● Advanced
 
 This artifact is part of a public portfolio documenting my thinking process as a psychologist and learning architect: translating technical complexity into clear, usable, evidence-based learning systems.
+
+
+## License
+
+Shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Use, adapt, and share with attribution to Alejandra, [My Compass Journey](https://mycompassjourney.org/).
